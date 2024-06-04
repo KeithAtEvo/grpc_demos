@@ -1,0 +1,26 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+option csharp_namespace = "ReverseFuncs";
+
+package Funcs;
+
+
+service ReverseFunc {
+   rpc ReverseFuncProcessor(stream ReverseFuncOutputPayload) returns (stream ReverseFuncInputPayload);   
+}
+
+
+message ReverseFuncInputPayload {
+  //This is probably redundant because of order-preservation guarantees,
+  // but we'll use it until this system is proven robust.
+  string callGuid = 1;
+  string toEcho = 2;
+}
+ 
+
+message ReverseFuncOutputPayload{  
+  //This is probably redundant because of order-preservation guarantees,
+  // but we'll use it until this system is proven robust.
+  string callGuid = 1;
+  string theEcho = 2;
+}

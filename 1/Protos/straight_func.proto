@@ -1,0 +1,20 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+option csharp_namespace = "ReverseFuncs";
+
+package Funcs;
+
+
+service StraightFunc {
+   rpc StraightFuncProcessor(stream StraightFuncArgs) returns (stream StraightFuncReturn);   
+}
+
+
+message StraightFuncArgs {
+  string toEcho = 1;
+}
+ 
+
+message StraightFuncReturn{  
+  string theEcho = 1;
+}

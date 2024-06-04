@@ -1,28 +1,37 @@
-﻿using DuplexStreaming;
+﻿using ReverseFuncs;
 using Grpc.Net.Client;
 
 // The port number must match the port of the gRPC server.
 using var channel = GrpcChannel.ForAddress("http://localhost:5295");
-var client = new Notifier.NotifierClient(channel);
-using var call = client.ChatNotification();
+var client = new ReverseFunc.ReverseFuncClient(channel);
+using var call = client.ReverseFuncProcessor();
 
-var responseReaderTask = Task.Run(async Task () =>
-{
-    while (await call.ResponseStream.MoveNext(CancellationToken.None))
-    {
-        var note = call.ResponseStream.Current;
-        Console.WriteLine($"{note.Message}, received at {note.ReceivedAt}");
-    }
-});
+var openCommsMsg = new ReverseFuncOutputPayload() { TheEcho = "hello" };
 
-foreach (var msg in new[] {"Tom", "Jones"})
+var funcInputStream = call.ResponseStream;
+var funcOutputStream = call.RequestStream;
+
+await funcOutputStream.WriteAsync(openCommsMsg);
+
+var writeTasks = new HashSet<Task>();
+
+while (await funcInputStream.MoveNext(CancellationToken.None))
 {
-    var request = new NotificationsRequest() { Message = $"Hello {msg}", From = "Mom", To = msg };
-    await call.RequestStream.WriteAsync(request);
+    var funcInput = funcInputStream.Current;
+
+    System.Console.WriteLine($"received reverse-func input: CallGuid: {funcInput.CallGuid}, arg: '{funcInput.ToEcho}'. Sending output...");
+
+    var funcOutput = new ReverseFuncOutputPayload {CallGuid = funcInput.CallGuid, TheEcho = funcInput.ToEcho};
+
+    writeTasks.Add(funcOutputStream.WriteAsync(funcOutput));
 }
 
-await call.RequestStream.CompleteAsync();
-await responseReaderTask;
+foreach (var task in writeTasks)
+{
+    await task;
+}
+
+await funcOutputStream.CompleteAsync();
 
 Console.WriteLine("Press any key to exit...");
 Console.ReadKey();
