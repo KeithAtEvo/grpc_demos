@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\notify.proto">
+    <Protobuf Include="..\Protos\notify.proto">
       <GrpcServices>Client</GrpcServices>
       <Access>Public</Access>
       <ProtoCompile>True</ProtoCompile>
