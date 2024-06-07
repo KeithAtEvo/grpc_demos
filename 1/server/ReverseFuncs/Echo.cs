@@ -54,7 +54,7 @@ namespace RpcServices
 
         static ConcurrentDictionary<string, Task<Result>> openCalls = new();
 
-        public static async Task<Result> Run(string id, string stringToEcho)
+        public static async Task<Result> Run(string id, Args args)
         {
             bool clientHasFunctionality = ReverseFuncService.clients.TryGetValue(id, out ReverseFuncService.EchoClientComms? comms);
             if (!clientHasFunctionality)
@@ -73,7 +73,7 @@ namespace RpcServices
                 return new Result("<see error message>");
             }
 
-            RpcGenerated.EchoInput input = new() { ToEcho = stringToEcho, CallGuid = Guid.NewGuid().ToString() };
+            RpcGenerated.EchoInput input = new() { ToEcho = args.ValToEcho, CallGuid = Guid.NewGuid().ToString() };
 
             TaskCompletionSource<RpcGenerated.EchoOutput> promise = new();
 
@@ -97,6 +97,12 @@ namespace RpcServices
 
             //Task is completed by EchoService when we receive the response.
             RpcGenerated.EchoOutput output = await promise.Task;
+
+            System.Console.WriteLine(
+                "client responded with output:"
+                + $" client: {output.ClientId}"
+                + $" call: {output.CallGuid}"
+                + $" arg: {output.TheEcho}");
 
             return new Result(output);
         }

@@ -32,12 +32,12 @@ public class ServerProgram
 
         for (int i = 1; i <= ncalls; i++)
         {
-            string arg = $"arg{i}";
+            RpcServices.EchoFunc.Args echoArg = new($"arg{i}");
             System.Console.WriteLine("sending function calls to clients...");
 
             foreach ((var clientId, var comms) in RpcServices.ReverseFuncService.clients)
             {
-                var task = RpcServices.EchoFunc.Run(clientId, arg);
+                var task = RpcServices.EchoFunc.Run(clientId, echoArg);
                 if (doAsync)
                     allTasks.Add(task);
                 else
