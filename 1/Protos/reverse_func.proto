@@ -1,16 +1,15 @@
 syntax = "proto3";
-import "google/protobuf/timestamp.proto";
-option csharp_namespace = "ReverseFuncs";
+option csharp_namespace = "RpcGenerated";
 
 package Funcs;
 
 
-service ReverseFunc {
-   rpc ReverseFuncProcessor(stream ReverseFuncOutputPayload) returns (stream ReverseFuncInputPayload);   
+service Reverse {
+   rpc Echo(stream EchoOutput) returns (stream EchoInput);
 }
 
 
-message ReverseFuncInputPayload {
+message EchoInput {
   //This is probably redundant because of order-preservation guarantees,
   // but we'll use it until this system is proven robust.
   string callGuid = 1;
@@ -18,9 +17,12 @@ message ReverseFuncInputPayload {
 }
  
 
-message ReverseFuncOutputPayload{  
+message EchoOutput{
+  //This is only needed for initial handshake, but may be used in subsequent debugging checks.
+  // This is the id we bestowed upon them when they first called the register function.
+  string clientId = 1;
   //This is probably redundant because of order-preservation guarantees,
   // but we'll use it until this system is proven robust.
-  string callGuid = 1;
-  string theEcho = 2;
+  string callGuid = 2;
+  string theEcho = 3;
 }
