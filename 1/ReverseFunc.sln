@@ -9,7 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "client", "client\client.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protos", "Protos", "{A6F972B4-3DCC-4219-B013-BB2509C9BE00}"
 	ProjectSection(SolutionItems) = preProject
-		..\Protos\notify.proto = ..\Protos\notify.proto
+		Protos\reverse_func.proto = Protos\reverse_func.proto
+		Protos\straight_func.proto = Protos\straight_func.proto
 	EndProjectSection
 EndProject
 Global

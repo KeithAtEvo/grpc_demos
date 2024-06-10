@@ -1,0 +1,28 @@
+syntax = "proto3";
+option csharp_namespace = "RpcGenerated";
+
+package Funcs;
+
+
+service Straight {
+   rpc RegisterClient(RegisterClientRequest) returns (RegisterClientResponse);   
+   rpc DeregisterClient(DeregisterClientRequest) returns (DeregisterClientResponse);   
+}
+
+
+message RegisterClientRequest {
+	bool dummy = 1;
+}
+ 
+message RegisterClientResponse{  
+  string bestowedId = 1;
+}
+
+
+message DeregisterClientRequest {
+  string bestowedId = 1;
+}
+
+message DeregisterClientResponse{
+  bool ok = 1;
+}
