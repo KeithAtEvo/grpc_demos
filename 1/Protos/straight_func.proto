@@ -1,10 +1,10 @@
 syntax = "proto3";
-option csharp_namespace = "RpcGenerated";
+option csharp_namespace = "Rpc.Straight.Generated";
 
-package Funcs;
+package ReverseRpcDemo;
 
 
-service Straight {
+service Service {
    rpc RegisterClient(RegisterClientRequest) returns (RegisterClientResponse);   
    rpc DeregisterClient(DeregisterClientRequest) returns (DeregisterClientResponse);   
 }

@@ -1,10 +1,10 @@
 syntax = "proto3";
-option csharp_namespace = "RpcGenerated";
+option csharp_namespace = "Rpc.Reverse.Generated";
 
-package Funcs;
+package ReverseRpcDemo;
 
 
-service Reverse {
+service Service {
    rpc Echo(stream EchoOutput) returns (stream EchoInput);
 }
 

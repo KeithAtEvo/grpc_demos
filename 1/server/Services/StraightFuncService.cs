@@ -1,29 +1,33 @@
 using Grpc.Core;
-using Microsoft.AspNetCore.Identity.Data;
 using System.Collections.Concurrent;
 
 
-//We're not actually doing anything with this yet.
-class Comms
-{
-    public static ConcurrentDictionary<string, bool> clients = new();
-};
-
-namespace RpcServices
+namespace Rpc
 {
 
-    public class StraightFuncService : RpcGenerated.Straight.StraightBase
+    //We're not actually doing anything with this yet.
+    class Comms
     {
-        private readonly ILogger<StraightFuncService> _logger;
+        public static ConcurrentDictionary<string, bool> clients = new();
+    };
 
-        public StraightFuncService(ILogger<StraightFuncService> logger)
+}
+
+namespace Rpc.Straight
+{
+
+    public class Service : Generated.Service.ServiceBase
+    {
+        private readonly ILogger<Service> _logger;
+
+        public Service(ILogger<Service> logger)
         {
             _logger = logger;
         }
 
-        public override Task<RpcGenerated.RegisterClientResponse>
+        public override Task<Generated.RegisterClientResponse>
         RegisterClient(
-            RpcGenerated.RegisterClientRequest request,
+            Generated.RegisterClientRequest request,
             ServerCallContext context)
         {
             string id = Guid.NewGuid().ToString();
@@ -31,12 +35,12 @@ namespace RpcServices
 
             System.Console.WriteLine($"registered client, bestowed id {id}.");
 
-            return Task.FromResult(new RpcGenerated.RegisterClientResponse(){ BestowedId = id });
+            return Task.FromResult(new Generated.RegisterClientResponse(){ BestowedId = id });
         }
 
-        public override Task<RpcGenerated.DeregisterClientResponse>
+        public override Task<Generated.DeregisterClientResponse>
         DeregisterClient(
-            RpcGenerated.DeregisterClientRequest request,
+            Generated.DeregisterClientRequest request,
             ServerCallContext context)
         {
             bool ok = Comms.clients.TryRemove(request.BestowedId, out _);
@@ -49,7 +53,7 @@ namespace RpcServices
                 System.Console.WriteLine($"deregistered client {request.BestowedId}.");
             }
 
-            return Task.FromResult(new RpcGenerated.DeregisterClientResponse() { Ok = ok });
+            return Task.FromResult(new Generated.DeregisterClientResponse() { Ok = ok });
         }
 
     }
