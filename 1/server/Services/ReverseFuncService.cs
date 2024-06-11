@@ -7,6 +7,7 @@ using Grpc.Core;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using RpcGenerated;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RpcServices;
 
@@ -51,24 +52,19 @@ public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
 
         EchoOutput clientHandshake = comms.OutputStream.Current;
 
-        if (clientHandshake.CallGuid != "0")
+        //During this initial handshake, we repurpose the CallGuid field to hold our client id.
+        var clientId = clientHandshake.CallGuid;
+
+        if (!global::Comms.clients.ContainsKey(clientId))
         {
             string errStr =
-                "client's first message did not appear to be a handshake."
+                "Expected handshake from known client, but received either a non-handshake"
+                + " or a handshake from an unknown client."
                 + " Closing this connection...";
             System.Console.WriteLine(errStr);
             throw new System.Exception(errStr);
         }
-        if (!global::Comms.clients.ContainsKey(clientHandshake.ClientId))
-        {
-            string errStr =
-                "client tried to register for a reverse-func"
-                + " without first registering at top level."
-                + " Closing this connection...";
-            System.Console.WriteLine(errStr);
-            throw new System.Exception(errStr);
-        }
-        if (!clients.TryAdd(clientHandshake.ClientId, comms))
+        if (!clients.TryAdd(clientId, comms))
         {
             string errStr =
                 "client was already registered for this reverse-func."
@@ -80,12 +76,13 @@ public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
         await comms.InputStream.WriteAsync(
             new RpcGenerated.EchoInput()
             {
-                ToEcho = clientHandshake.ClientId,
+                ToEcho = "hello",
                 CallGuid = clientHandshake.CallGuid
             });
 
+        System.Console.WriteLine($"client {clientId} subscribed to our Echo reverse-func service.");
 
-        return clientHandshake.ClientId;
+        return clientId;
     }
 
     public override async Task
@@ -104,12 +101,6 @@ public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
         while (await funcOutputStreamIn.MoveNext())
         {
             var funcOutput = funcOutputStreamIn.Current;
-
-            if(funcOutput.ClientId != clientId)
-            {
-                System.Console.WriteLine($"client id mismatch. Expected {clientId}, received {funcOutput.ClientId}...");
-                return;
-            }
 
             bool openCallExists =
                 clientComms.OpenCalls.TryGetValue(

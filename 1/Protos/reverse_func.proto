@@ -18,11 +18,12 @@ message EchoInput {
  
 
 message EchoOutput{
-  //This is only needed for initial handshake, but may be used in subsequent debugging checks.
-  // This is the id we bestowed upon them when they first called the register function.
-  string clientId = 1;
+
   //This is probably redundant because of order-preservation guarantees,
   // but we'll use it until this system is proven robust.
-  string callGuid = 2;
-  string theEcho = 3;
+  //
+  //During initial handshake, we put the client id in here instead.
+  string callGuid = 1;
+
+  string theEcho = 2;
 }

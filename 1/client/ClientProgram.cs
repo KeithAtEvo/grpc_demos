@@ -150,12 +150,13 @@ class RpcClientListeners
         var inputStream = echoCall.ResponseStream;
         var outputStream = echoCall.RequestStream;
 
-        EchoOutput clientHandshake = new() { ClientId = id, CallGuid = "0" };
+        //During this initial handshake, we repurpose the CallGuid field to hold our client id.
+        EchoOutput clientHandshake = new() { CallGuid = id, TheEcho = "hello" };
         await outputStream.WriteAsync(clientHandshake);
         await inputStream.MoveNext(CancellationToken.None);
-        var funcInput = inputStream.Current;
+        var serverHandshake = inputStream.Current;
 
-        if(funcInput.ToEcho == id && funcInput.CallGuid == clientHandshake.CallGuid)
+        if(serverHandshake.ToEcho == clientHandshake.TheEcho && serverHandshake.CallGuid == clientHandshake.CallGuid)
         {
             System.Console.WriteLine("Handshake successful.");
         }
@@ -202,7 +203,7 @@ class RpcClientListeners
 
             System.Console.WriteLine($"received reverse-func input: CallGuid: {funcInput.CallGuid}, arg: '{funcInput.ToEcho}'. Sending output...");
 
-            var funcOutput = new EchoOutput {CallGuid = funcInput.CallGuid, TheEcho = funcInput.ToEcho, ClientId = Id};
+            var funcOutput = new EchoOutput {CallGuid = funcInput.CallGuid, TheEcho = funcInput.ToEcho};
 
             System.Console.WriteLine($"responding with reverse-func output: CallGuid: {funcInput.CallGuid}, arg: '{funcInput.ToEcho}'. Sending output...");
 

@@ -28,6 +28,9 @@ namespace RpcServices
         {
             string id = Guid.NewGuid().ToString();
             Comms.clients.TryAdd(id, true);
+
+            System.Console.WriteLine($"registered client, bestowed id {id}.");
+
             return Task.FromResult(new RpcGenerated.RegisterClientResponse(){ BestowedId = id });
         }
 
@@ -37,10 +40,15 @@ namespace RpcServices
             ServerCallContext context)
         {
             bool ok = Comms.clients.TryRemove(request.BestowedId, out _);
-            if(!ok)
+            if (!ok)
             {
                 Console.WriteLine($"client identifying as '{request.BestowedId}' requested deregistration, but no such registration was found.");
             }
+            else
+            {
+                System.Console.WriteLine($"deregistered client {request.BestowedId}.");
+            }
+
             return Task.FromResult(new RpcGenerated.DeregisterClientResponse() { Ok = ok });
         }
 
