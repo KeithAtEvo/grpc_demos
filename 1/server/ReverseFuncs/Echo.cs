@@ -1,5 +1,4 @@
 ﻿
-using RpcServices;
 using System.Collections.Concurrent;
 
 namespace RpcServices
@@ -23,7 +22,7 @@ namespace RpcServices
             }
 
             internal Result(
-                RpcGenerated.EchoOutput output
+                Rpc.Reverse.Generated.EchoOutput output
             //, etc ...
             ) : this(output.TheEcho)
             {
@@ -45,7 +44,7 @@ namespace RpcServices
             }
 
             internal Args(
-                RpcGenerated.EchoInput input
+                Rpc.Reverse.Generated.EchoInput input
             //, etc ...
             ) : this(input.ToEcho)
             {
@@ -56,7 +55,7 @@ namespace RpcServices
 
         public static async Task<Result> Run(string id, Args args)
         {
-            bool clientHasFunctionality = ReverseFuncService.clients.TryGetValue(id, out ReverseFuncService.EchoClientComms? comms);
+            bool clientHasFunctionality = Rpc.Reverse.Service.Clients.TryGetValue(id, out Rpc.Reverse.Service.EchoClientComms? comms);
             if (!clientHasFunctionality)
             {
                 System.Console.WriteLine(
@@ -73,9 +72,9 @@ namespace RpcServices
                 return new Result("<see error message>");
             }
 
-            RpcGenerated.EchoInput input = new() { ToEcho = args.ValToEcho, CallGuid = Guid.NewGuid().ToString() };
+            Rpc.Reverse.Generated.EchoInput input = new() { ToEcho = args.ValToEcho, CallGuid = Guid.NewGuid().ToString() };
 
-            TaskCompletionSource<RpcGenerated.EchoOutput> promise = new();
+            TaskCompletionSource<Rpc.Reverse.Generated.EchoOutput> promise = new();
 
             if (!comms.OpenCalls.TryAdd(
                 input.CallGuid,
@@ -96,7 +95,7 @@ namespace RpcServices
             await comms.InputStream.WriteAsync(input);
 
             //Task is completed by EchoService when we receive the response.
-            RpcGenerated.EchoOutput output = await promise.Task;
+            Rpc.Reverse.Generated.EchoOutput output = await promise.Task;
 
             System.Console.WriteLine(
                 "client responded with output:"

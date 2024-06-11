@@ -1,36 +1,25 @@
-using System.ComponentModel;
-using System.Diagnostics.Metrics;
-
-using Google.Protobuf.WellKnownTypes;
-
 using Grpc.Core;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using RpcGenerated;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace RpcServices;
+namespace Rpc.Reverse;
 
-public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
+public class Service(ILogger<Service> logger) : Generated.Service.ServiceBase
 {
-    private readonly ILogger<ReverseFuncService> _logger;
-    public ReverseFuncService(ILogger<ReverseFuncService> logger) {
-        _logger = logger;
-    }
+    private ILogger<Service> Logger => logger;
 
-    public static ConcurrentDictionary<string, EchoClientComms> clients = new();
+    public static ConcurrentDictionary<string, EchoClientComms> Clients = new();
 
     public class EchoClientComms
     {
-        public IServerStreamWriter<RpcGenerated.EchoInput> InputStream { get; private init; }
-        public IAsyncStreamReader<RpcGenerated.EchoOutput> OutputStream { get; private init; }
+        public IServerStreamWriter<Generated.EchoInput> InputStream { get; private init; }
+        public IAsyncStreamReader<Generated.EchoOutput> OutputStream { get; private init; }
 
         //calls to this client
-        public ConcurrentDictionary<string, TaskCompletionSource<RpcGenerated.EchoOutput>> OpenCalls { get; private init; }
+        public ConcurrentDictionary<string, TaskCompletionSource<Generated.EchoOutput>> OpenCalls { get; private init; }
 
         public EchoClientComms(
-            IServerStreamWriter<RpcGenerated.EchoInput> inputStream,
-            IAsyncStreamReader<RpcGenerated.EchoOutput> outputStream
+            IServerStreamWriter<Generated.EchoInput> inputStream,
+            IAsyncStreamReader<Generated.EchoOutput> outputStream
         )
         {
             InputStream = inputStream;
@@ -46,49 +35,49 @@ public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
         if (!await comms.OutputStream.MoveNext())
         {
             string errStr = "unkown client of Echo disconnected before registering itself";
-            System.Console.WriteLine(errStr);
+            Logger.LogError(errStr);
             throw new System.Exception(errStr);
         }
 
-        EchoOutput clientHandshake = comms.OutputStream.Current;
+        Generated.EchoOutput clientHandshake = comms.OutputStream.Current;
 
         //During this initial handshake, we repurpose the CallGuid field to hold our client id.
         var clientId = clientHandshake.CallGuid;
 
-        if (!global::Comms.clients.ContainsKey(clientId))
+        if (!Comms.clients.ContainsKey(clientId))
         {
             string errStr =
                 "Expected handshake from known client, but received either a non-handshake"
                 + " or a handshake from an unknown client."
                 + " Closing this connection...";
-            System.Console.WriteLine(errStr);
+            Logger.LogError(errStr);
             throw new System.Exception(errStr);
         }
-        if (!clients.TryAdd(clientId, comms))
+        if (!Clients.TryAdd(clientId, comms))
         {
             string errStr =
                 "client was already registered for this reverse-func."
                 + " Closing this connection...";
-            System.Console.WriteLine(errStr);
+            Logger.LogError(errStr);
             throw new System.Exception(errStr);
         }
 
         await comms.InputStream.WriteAsync(
-            new RpcGenerated.EchoInput()
+            new Generated.EchoInput()
             {
                 ToEcho = "hello",
                 CallGuid = clientHandshake.CallGuid
             });
 
-        System.Console.WriteLine($"client {clientId} subscribed to our Echo reverse-func service.");
+        Logger.LogInformation($"client {clientId} subscribed to our Echo reverse-func service.");
 
         return clientId;
     }
 
     public override async Task
         Echo(
-            IAsyncStreamReader<RpcGenerated.EchoOutput> funcOutputStreamIn,
-            IServerStreamWriter<RpcGenerated.EchoInput> funcInputStreamOut,
+            IAsyncStreamReader<Generated.EchoOutput> funcOutputStreamIn,
+            IServerStreamWriter<Generated.EchoInput> funcInputStreamOut,
             ServerCallContext context)
     {
         EchoClientComms clientComms = new(funcInputStreamOut, funcOutputStreamIn);
@@ -105,7 +94,7 @@ public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
             bool openCallExists =
                 clientComms.OpenCalls.TryGetValue(
                     funcOutput.CallGuid,
-                    out TaskCompletionSource<RpcGenerated.EchoOutput>? promise);
+                    out TaskCompletionSource<Generated.EchoOutput>? promise);
             if(!openCallExists)
             {
                 System.Console.WriteLine(
@@ -125,6 +114,6 @@ public class ReverseFuncService : RpcGenerated.Reverse.ReverseBase
         if(clientComms.OpenCalls.Count > 0)
             System.Console.WriteLine($"client {clientId} had {clientComms.OpenCalls.Count} calls open when it disconnected");
 
-        clients.TryRemove(clientId, out _);
+        Clients.TryRemove(clientId, out _);
     }
 }

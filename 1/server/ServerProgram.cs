@@ -10,8 +10,8 @@ public class ServerProgram
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.MapGrpcService<RpcServices.StraightFuncService>();
-        app.MapGrpcService<RpcServices.ReverseFuncService>();
+        app.MapGrpcService<Rpc.Straight.Service>();
+        app.MapGrpcService<Rpc.Reverse.Service>();
 
         app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
@@ -20,7 +20,7 @@ public class ServerProgram
         int nclients = 3;
         int ncalls = 4;
 
-        while (RpcServices.ReverseFuncService.clients.Count < nclients)
+        while (Rpc.Reverse.Service.Clients.Count < nclients)
         {
             System.Console.WriteLine("waiting for clients to connect...");
             System.Threading.Thread.Sleep(1000);
@@ -35,7 +35,7 @@ public class ServerProgram
             RpcServices.EchoFunc.Args echoArg = new($"arg{i}");
             System.Console.WriteLine("sending function calls to clients...");
 
-            foreach ((var clientId, var comms) in RpcServices.ReverseFuncService.clients)
+            foreach ((var clientId, var comms) in Rpc.Reverse.Service.Clients)
             {
                 var task = RpcServices.EchoFunc.Run(clientId, echoArg);
                 if (doAsync)
