@@ -100,7 +100,6 @@ namespace RpcServices
 
             System.Console.WriteLine(
                 "client responded with output:"
-                + $" client: {output.ClientId}"
                 + $" call: {output.CallGuid}"
                 + $" arg: {output.TheEcho}");
 
