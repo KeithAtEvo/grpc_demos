@@ -1,0 +1,18 @@
+syntax = "proto3";
+option csharp_namespace = "Rpc.Generated";
+
+package Demo;
+
+
+service Service {
+   rpc Func(Req) returns (Resp);   
+}
+
+
+message Req {
+	bool arg = 1;
+}
+ 
+message Resp{  
+  bool val = 1;
+}
