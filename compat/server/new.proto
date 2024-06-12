@@ -4,17 +4,24 @@ option csharp_namespace = "Rpc.Generated";
 package CompatDemo;
 
 
+
 service Service {
    rpc Func(Req) returns (Resp);   
 }
 
+message InternalType {
+		string grass = 1;
+		string gravel = 2;
+}
 
 message Req {
-	string field = 1;
-	string newField = 2;
+
+	InternalType t = 1;
+	string field = 2;
+
 }
  
-message Resp{  
-	string field = 1;
-	string newField = 2;
+message Resp{
+	InternalType t = 1;
+	string field = 2;
 }

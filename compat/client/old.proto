@@ -8,11 +8,18 @@ service Service {
    rpc Func(Req) returns (Resp);   
 }
 
+message InternalType {
+		string grass = 1;
+}
 
 message Req {
-	string field = 1;
+
+	InternalType t = 1;
+	string field = 2;
+
 }
  
-message Resp{  
-	string field = 1;
+message Resp{
+	InternalType t = 1;
+	string field = 2;
 }

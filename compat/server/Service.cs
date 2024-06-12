@@ -19,9 +19,14 @@ namespace Rpc
             Generated.Req request,
             ServerCallContext context)
         {
-            _logger.LogInformation($"client sent {request.Field}, {request.NewField}.");
+            _logger.LogInformation($"client sent grass: '{request.T.Grass}',  gravel: '{request.T.Gravel}',  field: '{request.Field}'.");
 
-            return Task.FromResult(new Generated.Resp(){ Field = request.Field, NewField = "newVal"});
+            return Task.FromResult(
+                new Generated.Resp()
+                {
+                    Field = "mowed",
+                    T = new Generated.InternalType() { Grass = "green", Gravel = "gray" }
+                });
         }
 
     }

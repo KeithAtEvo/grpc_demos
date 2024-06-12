@@ -9,13 +9,13 @@ class ClientClientProgram
         var channel = GrpcChannel.ForAddress("http://localhost:5295");
         Rpc.Generated.Service.ServiceClient clientService = new(channel);
 
-        Rpc.Generated.Req request = new() { Field = "yo" };
+        Rpc.Generated.Req request = new() { T = new Rpc.Generated.InternalType() { Grass = "growing" }, Field = "empty" };
 
-        System.Console.WriteLine($"sending: {request.Field}");
+        System.Console.WriteLine($"sending: '{request.T.Grass}', '{request.Field}'");
 
         Rpc.Generated.Resp response = await clientService.FuncAsync(request);
 
-        System.Console.WriteLine($"Server answered: {response.Field}");
+        System.Console.WriteLine($"Server answered: '{response.T.Grass}', '{response.Field}'");
         System.Console.ReadKey();
     }
     
